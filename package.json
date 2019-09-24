@@ -4,11 +4,11 @@
   "description": "Initialize a nest starter repository",
   "bin": "bin/nestup",
   "scripts": {
-    "start": "node bin/nestx.js"
+    "start": "./bin/nestup"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jharrilim/nest-rest-typeorm-boilerplate.git"
+    "url": "git+https://github.com/jharrilim/nestup.git"
   },
   "keywords": [
     "nest",
@@ -18,9 +18,9 @@
   "author": "Joseph Harrison-Lim",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/jharrilim/nest-rest-typeorm-boilerplate/issues"
+    "url": "https://github.com/jharrilim/nestup/issues"
   },
-  "homepage": "https://github.com/jharrilim/nest-rest-typeorm-boilerplate#readme",
+  "homepage": "https://github.com/jharrilim/nestup#readme",
   "dependencies": {
     "fs-extra": "^8.1.0"
   },
