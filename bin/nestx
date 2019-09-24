@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+const { join } = require('path');
+const { copy } = require('fs-extra');
+
+const templatePath = join(__dirname, '..', 'template');
+
+process.argv.shift(); // node
+process.argv.shift(); // this file
+
+if(process.argv.length === 0) {
+    throw Error('No argument was given.');
+}
+
+copy(templatePath, process.argv.shift(), {
+    recursive: true
+});
