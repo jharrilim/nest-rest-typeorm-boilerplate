@@ -1,8 +1,8 @@
 {
-  "name": "nest-x",
-  "version": "0.1.0",
+  "name": "nestup",
+  "version": "0.1.1",
   "description": "Initialize a nest starter repository",
-  "bin": "bin/nestx",
+  "bin": "bin/nestup",
   "scripts": {
     "start": "node bin/nestx.js"
   },
@@ -26,5 +26,12 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^8.0.0"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "template",
+    "bin"
+  ]
 }
