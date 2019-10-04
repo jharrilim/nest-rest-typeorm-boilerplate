@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiResponse, ApiUseTags } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
+import { AuthService, ITokenReturnBody } from './auth.service';
 import { LoginPayload } from './payload/login.payload';
 import { RegisterPayload } from './payload/register.payload';
 import { ProfileService } from '../profile/profile.service';
@@ -8,8 +8,8 @@ import { ProfileService } from '../profile/profile.service';
 /**
  * Authentication Controller
  */
-@Controller('api/auth')
 @ApiUseTags('authentication')
+@Controller('api/auth')
 export class AuthController {
   /**
    * Constructor
@@ -22,14 +22,14 @@ export class AuthController {
   ) {}
 
   /**
-   * Authentication route to login
+   * Login route to validate and create tokens for users
    * @param {LoginPayload} payload the login dto
    */
   @Post('login')
   @ApiResponse({ status: 201, description: 'Login Completed' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async login(@Body() payload: LoginPayload) {
+  async login(@Body() payload: LoginPayload): Promise<ITokenReturnBody> {
     const profile = await this.authService.validateUser(payload);
     return await this.authService.createToken(profile);
   }

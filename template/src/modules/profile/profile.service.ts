@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import { url } from 'gravatar';
 import {
   BadRequestException,
   Injectable,
@@ -10,6 +11,17 @@ import { Repository } from 'typeorm';
 import { Profile } from './profile.entity';
 import { RegisterPayload } from '../auth/payload/register.payload';
 import { Roles } from '../app/roles.entity';
+import { PatchProfilePayload } from './payload/patch.profile.payload';
+
+/**
+ * Models a typical response for a crud operation
+ */
+export interface IGenericMessageBody {
+  /**
+   * Status message to return
+   */
+  message: string;
+}
 
 /**
  * Profile Service
@@ -31,26 +43,29 @@ export class ProfileService {
   /**
    * Fetches profile from database by UUID
    * @param {number} id
+   * @returns {Promise<Profile>} queried profile data
    */
-  async get(id: number) {
+  get(id: number): Promise<Profile> {
     return this.profileRepository.findOne(id, { relations: ['roles'] });
   }
 
   /**
    * Fetches profile from database by username
    * @param {string} username
+   * @returns {Promise<Profile>} queried profile data
    */
-  async getByUsername(username: string) {
-    return await this.profileRepository.findOne({ username });
+  getByUsername(username: string): Promise<Profile> {
+    return this.profileRepository.findOne({ username });
   }
 
   /**
    * Fetches profile by username and hashed password
    * @param {string} username
    * @param {string} password
+   * @returns {Promise<Profile>} queried profile data
    */
-  async getByUsernameAndPass(username: string, password: string) {
-    return await this.profileRepository
+  getByUsernameAndPass(username: string, password: string): Promise<Profile> {
+    return this.profileRepository
       .createQueryBuilder('profiles')
       .where('profiles.username = :username and profiles.password = :password')
       .setParameter('username', username)
@@ -62,13 +77,14 @@ export class ProfileService {
   }
 
   /**
-   * Creates a profile
+   * Create a profile with RegisterPayload fields
    * @param {RegisterPayload} payload profile payload
+   * @returns {Promise<Profile>} created profile data
    */
-  async create(payload: RegisterPayload) {
-    const user = await this.getByUsername(payload.username);
+  async create(payload: RegisterPayload): Promise<Profile> {
+    const profile = await this.getByUsername(payload.username);
 
-    if (user) {
+    if (profile) {
       throw new NotAcceptableException(
         'The account with the provided username currently exists. Please choose another one.',
       );
@@ -77,16 +93,49 @@ export class ProfileService {
     // keep making roles for a particular profile, these roles are defined from AppRoles enum.
     const roles: Roles[] = [new Roles()];
     await this.rolesRepository.save(roles);
-    return await this.profileRepository.save(
-      this.profileRepository.create({ ...payload, roles }),
+    return this.profileRepository.save(
+      this.profileRepository.create({
+        ...payload,
+        roles,
+        avatar: url(payload.email, {
+          protocol: 'http',
+          s: '200',
+          r: 'pg',
+          d: '404',
+        }),
+      }),
     );
   }
 
   /**
-   * Deletes profile from provided username
-   * @param {string} username
+   * Edit profile data
+   * @param {PatchProfilePayload} payload
+   * @returns {Promise<Profile>} mutated profile data
    */
-  async delete(username: string) {
+  async edit(payload: PatchProfilePayload): Promise<Profile> {
+    const { username } = payload;
+    const profile = await this.getByUsername(username);
+    if (profile) {
+      Object.keys(payload).forEach(key => {
+        if (key === 'password') {
+          key = crypto.createHmac('sha256', key).digest('hex');
+        }
+        profile[key] = payload[key];
+      });
+      return this.profileRepository.save(profile);
+    } else {
+      throw new BadRequestException(
+        'The profile with that username does not exist in the system. Please try another username.',
+      );
+    }
+  }
+
+  /**
+   * Delete profile given a username
+   * @param {string} username
+   * @returns {Promise<IGenericMessageBody>} whether or not the crud operation was completed
+   */
+  async delete(username: string): Promise<IGenericMessageBody> {
     const deleted = await this.profileRepository.delete({ username });
     if (deleted.affected === 1) {
       return { message: `Deleted ${username} from records` };
