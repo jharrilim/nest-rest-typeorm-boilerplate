@@ -9,7 +9,7 @@ Generate a Nest project with:
 - TypeORM
 - Nodemon Setup
 - Integration Tests
-- Travis CLI
+- Travis CI
 - MySQL/MariaDB
 - TS Configs
 
